@@ -25,13 +25,30 @@ It wrote the code, ran away, and now the game is unplayable.
 
 ## 📝 Document Your Experience
 
-- [ ] Describe the game's purpose.
-- [ ] Detail which bugs you found.
-- [ ] Explain what fixes you applied.
+- [ The purpose of the game is to guess the right number within a certain amount of tries.] Describe the game's purpose.
+- [The score bug, the "higher and lower bug" and the "new game" button bug". ] Detail which bugs you found.
+- [fix: resolve hint direction, new game reset, and scoring bugs
+
+- Move get_range_for_difficulty, parse_guess, check_guess, and
+  update_score out of app.py and into logic_utils.py
+- Add import statement in app.py to pull all functions from logic_utils
+- Fix check_guess() returning reversed hint messages (Too High now says
+  Go LOWER, Too Low now says Go HIGHER) in both try and except blocks
+- Fix new game reset not restoring status to "playing", causing game to
+  stay blocked after restart
+- Fix new game reset using hardcoded randint(1, 100) instead of
+  respecting difficulty range (low, high)
+- Fix attempts initializing at 1 instead of 0, causing off-by-one in
+  attempt tracking
+- Replace broken scoring formula (100 - 10 * attempt) with linear
+  formula (100 * (limit - attempt + 1) / limit) to match expected output
+- Add attempt_limit parameter to update_score() and pass it from app.py
+- Floor score at 0 to prevent negative scores on wrong guesses ] 
+Explain what fixes you applied.
 
 ## 📸 Demo
 
-- [ ] [Insert a screenshot of your fixed, winning game here]
+- [ ![alt text](image.png)] [Insert a screenshot of your fixed, winning game here]
 
 ## 🚀 Stretch Features
 

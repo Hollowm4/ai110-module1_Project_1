@@ -20,22 +20,32 @@ It made me fix the 4 def variables inside of app.py and put them inside the logi
 
 ## 3. Debugging and testing your fixes
 
-- How did you decide whether a bug was really fixed? I made revisions then launched the app.
+- How did you decide whether a bug was really fixed? 
+
+I made revisions then launched the app.
+
 - Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code. I tested the "Higher" and "Lower" feature and I also tested the scoring feature
-- Did AI help you design or understand any tests? How? It didn't help me design the tests because I already knew what I was looking for in terms of errors.
+  and what it showed you about your code. 
+  
+  I tested the "Higher" and "Lower" feature and I also tested the scoring feature
+- Did AI help you design or understand any tests? How? 
+
+It didn't help me design the tests because I already knew what I was looking for in terms of errors.
 
 ---
 
 ## 4. What did you learn about Streamlit and state?
 
-- How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+- How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit? 
+
+Every single time you interact with it — click a button, type something, move a slider — Streamlit erases the entire whiteboard and redraws it from scratch, top to bottom. That's a "rerun." It's just how Streamlit works.
 
 ---
 
 ## 5. Looking ahead: your developer habits
 
-- What is one habit or strategy from this project that you want to reuse in future labs or projects?
+- What is one habit or strategy from this project that you want to reuse in future labs or projects? 
+Being more specific with my prompts and screenshots.
   - This could be a testing habit, a prompting strategy, or a way you used Git.
-- What is one thing you would do differently next time you work with AI on a coding task?
-- In one or two sentences, describe how this project changed the way you think about AI generated code.
+- What is one thing you would do differently next time you work with AI on a coding task? N/A
+- In one or two sentences, describe how this project changed the way you think about AI generated code. The only think that Ive learned is to make a tester document.
