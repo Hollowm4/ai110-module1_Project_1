@@ -47,16 +47,30 @@ class Task(ABC):
         self.completed = False
 
     def mark_complete(self) -> None:
-        """Mark this task as completed."""
+        """Mark this task as completed and schedule next occurrence if recurring."""
+        from datetime import datetime, timedelta
         self.completed = True
 
-     def __repr__(self) -> str:
+        if self.pet and self.frequency in ("daily", "weekly"):
+            delta = timedelta(days=1) if self.frequency == "daily" else timedelta(weeks=1)
+            next_time = (datetime.now() + delta).strftime("%H:%M")
+
+            next_task = self.__class__(
+                description=self.description,
+                time=next_time,
+                frequency=self.frequency,
+                priority=self.priority,
+                duration=self.duration,
+            )
+            self.pet.add_task(next_task)
+
+    def __repr__(self) -> str:
         """Return a readable string showing task status and details."""
         status = "✓" if self.completed else "✗"
         return f"[{status}] {self.__class__.__name__}: {self.description} @ {self.time}"
 
     @abstractmethod
-     def execute(self) -> None:
+    def execute(self) -> None:
         """Execute the task and mark it complete."""
         pass
 
@@ -140,6 +154,85 @@ class PetCareScheduler:
     def __init__(self, owner: Owner):
         self.owner = owner
 
+    def detect_conflicts(self, tasks: List[Task]) -> List[str]:
+        from collections import defaultdict
+        warnings = []
+        time_map = defaultdict(list)
+
+        for t in tasks:
+            time_map[t.time].append(t)
+
+        for time, grouped in time_map.items():
+            if len(grouped) > 1:
+                names = ", ".join(
+                    f"{t.__class__.__name__}({t.pet.name if t.pet else '?'})"
+                    for t in grouped
+                )
+                warnings.append(f"Conflict at {time}: {names}")
+
+        return warnings
+    """
+        Detect scheduling conflicts across all tasks.
+        Groups tasks by time using a defaultdict, then returns a warning
+        string for every time slot with more than one task.
+        Args: tasks — flat list of Task objects to check.
+        Returns: List of warning strings.
+    """
+    
+    def filter_tasks(
+        self,
+        tasks: List[Task],
+        pet_name: Optional[str] = None,
+        task_type: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> List[Task]:
+        from datetime import datetime
+        result = tasks
+    """
+        Filter tasks by pet name, task type, and/or completion status.
+        Runs up to three independent passes in sequence.
+        "overdue" derived dynamically via datetime.now() — never stored.
+        Any parameter left as None is skipped entirely.
+        Args: tasks, pet_name, task_type, status.
+        Returns: Filtered list of Task objects.
+    """
+
+        # Pass 1 — filter by pet name
+        if pet_name:
+            result = [t for t in result if t.pet and t.pet.name.lower() == pet_name.lower()]
+
+        # Pass 2 — filter by task type (class name)
+        if task_type:
+            result = [t for t in result if t.__class__.__name__.lower() == task_type.lower()]
+
+        # Pass 3 — filter by status ("completed", "pending", "overdue")
+        if status:
+            now = datetime.now().strftime("%H:%M")
+            if status == "completed":
+                result = [t for t in result if t.completed]
+            elif status == "pending":
+                result = [t for t in result if not t.completed]
+            elif status == "overdue":
+                # Derived dynamically: not completed and time has passed
+                result = [t for t in result if not t.completed and t.time != "TBD" and t.time < now]
+
+        return result
+    
+    def sort_by_time(self, tasks: List[Task]) -> List[Task]:
+        return sorted(tasks, key=lambda t: t.time)
+    """
+        Sort a list of tasks chronologically by their time string.
+
+        Relies on tasks using zero-padded 24-hour "HH:MM" format so that
+        plain string comparison produces correct chronological order
+        (e.g. "07:00" < "08:30" < "18:00").
+
+        Args:
+            tasks: list of Task objects to sort.
+        Returns:
+            New sorted list of Task objects (original list is not modified).
+    """
+
     def generate_plan(self) -> List[Task]:
         all_tasks = self.owner.get_all_tasks()
         total_time = self.owner.get_total_task_time()
@@ -149,7 +242,8 @@ class PetCareScheduler:
 
         # Sort by priority (lower number = higher priority)
         plan = sorted(all_tasks, key=lambda t: t.priority)
-
+        plan = self.sort_by_time(plan)
+        
         print(f"\n--- Daily Plan for {self.owner.name} ({date.today()}) ---")
         for task in plan:
             print(f"  Priority {task.priority} | {task}")
